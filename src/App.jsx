@@ -39,23 +39,41 @@ const animesData = [
       'The appearance of "quirks", newly discovered super powers, has been steadily increasing over the years, with 80 percent of humanity possessing various abilities from manipulation of elements to shapeshifting. This leaves the remainder of the world completely powerless, and Izuku Midoriya is one such individual.',
   },
 ];
-
+// ------------------ Main Function
 export default function App() {
+  const [animes, setAnimes] = useState(animesData);
+  const [selectedAnime, setSelectedAnime] = useState(animes[0]);
 
+  function handleSelectedAnime(id) {
+    const newAnime = animes.filter((anime) => anime.mal_id === id);
+    setSelectedAnime(newAnime[0]);
+  }
   return (
     <>
-      <Navbar />
-      <Main />
+      <Navbar>
+        <Search>
+          <NumResult animes={animes}></NumResult>
+        </Search>
+      </Navbar>
+      <Main>
+        <Box>
+          <AnimeList animes={animes} onSelectedAnime={handleSelectedAnime}></AnimeList> 
+        </Box>
+        <Box>
+          <AnimeDetail selectedAnime={selectedAnime}></AnimeDetail>
+        </Box>
+      </Main>
     </>
   );
 }
 
-function Navbar(){
+// ----------------- Navbar 
+function Navbar({ children }){
   return (
     <nav className="nav-bar">
-        <Logo />
-        <Search />
-      </nav>
+      <Logo />
+      {children}
+    </nav>
   )
 }
 
@@ -69,61 +87,53 @@ function Logo(){
   )
 }
 
-function Search(){
+function Search({ children }){
   const [query, setQuery] = useState('');
   return (
     <div className="search-container">
       <input className="search" type="text" placeholder="Search anime..." value={query} onChange={(e) => setQuery(e.target.value)} />
-      <NumResult />
+      {children}
     </div>
   )
 }
 
-function NumResult(){
+function NumResult({ animes }){
   return (
     <p className="search-results">
-      Found <strong>4</strong> results
+      Found <strong>{ animes.length }</strong> results
     </p>
   )
 }
 
-
+//-----------------------------------------------------
 // Main Content
-function Main(){
-  const [animes, setAnimes] = useState(animesData);
-  const [selectedAnime, setSelectedAnime] = useState(animes[0]);
-
-
-  function handleSelectedAnime(id) {
-    const newAnime = animes.filter((anime) => anime.mal_id === id);
-    setSelectedAnime(newAnime[0]);
-  }
-  
+function Main({ children }){
   return (
     <main className="main">
-      <ListBox animes={animes} onSelectedAnime={handleSelectedAnime} />
-      <SelectedBox selectedAnime={selectedAnime}/>
+      {children}
     </main>
   )
 }
 
-function ListBox({animes, onSelectedAnime}){
-  const [isOpen1, setIsOpen1] = useState(true);
+//---------- Resuseable Box
+function Box({ children }){
+  const [isOpen, setIsOpen] = useState(true);
   return (
     <div className="box">
-      <button className="btn-toggle" onClick={() => setIsOpen1((open) => !open)}>
-        {isOpen1 ? '–' : '+'}
+      <button className="btn-toggle" onClick={() => setIsOpen((open) => !open)}>
+        {isOpen ? '–' : '+'}
       </button>
-      {isOpen1 && <AnimeList animes={animes} onSelectedAnime={onSelectedAnime}/>}
+      {isOpen && children}
     </div>
   )
 }
+//-------------End Reuseable Box
 
-function AnimeList({animes, onSelectedAnime}){
+function AnimeList({ animes, onSelectedAnime }){
   return (
     <ul className="list list-anime">
       {animes?.map((anime) => (
-        <Anime anime={anime} onSelectedAnime={onSelectedAnime} />
+        <Anime key={anime.mal_id} anime={anime} onSelectedAnime={onSelectedAnime} />
       ))}
     </ul>
   )
@@ -143,19 +153,7 @@ function Anime({ anime, onSelectedAnime }){
   )
 }
 
-function SelectedBox({selectedAnime}){
-  const [isOpen2, setIsOpen2] = useState(true);
-
-  return (
-    <div className="box">
-      <button className="btn-toggle" onClick={() => setIsOpen2((open) => !open)}>
-        {isOpen2 ? '–' : '+'}
-      </button>
-      {isOpen2 && <AnimeDetail selectedAnime={selectedAnime} />}
-    </div>
-  )
-}
-
+// -------------------------------------------------------
 function AnimeDetail({selectedAnime}){
   return (
     <div className="details">
